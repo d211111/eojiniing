@@ -1,0 +1,546 @@
+rm(list=ls())
+
+### 데이터 전처리 ###
+# 데이터 읽기
+setwd('D:/3학년 2학기/빅데이터/1조')
+sdd = read.csv("Speed Dating Data.csv", header=T)
+
+#install.packages("magrittr")
+library(magrittr)
+library(dplyr)
+sdd<-sdd %>% filter(wave>9|wave<6)
+
+### Time2, Time3 제외 ###
+# Time2, Time3 correlation
+
+#install.packages("corrplot")
+library(corrplot)
+
+temp1.1<-select(sdd,attr1_1:shar1_1)
+temp1.2<-select(sdd,attr1_2:shar1_2)
+temp1.3<-select(sdd,attr1_3:shar1_3)
+temp7.2<-select(sdd,attr7_2:shar7_2)
+temp7.3<-select(sdd,attr7_3:shar7_3)
+
+cor1<-cor(temp1.1,temp1.2,use="pairwise.complete.obs")
+cor2<-cor(temp1.1,temp1.3,use="pairwise.complete.obs")
+cor3<-cor(temp1.1,temp7.2,use="pairwise.complete.obs")
+cor4<-cor(temp1.1,temp7.3,use="pairwise.complete.obs")
+
+# correlation Plot
+corrplot(cor1,method="number",
+         title= "Cor of W of char btw/ Time 1 and Time 2",
+         mar=c(2,0,2,0),
+         cl.cex=0.8,number.cex=1,tl.cex=0.8)
+corrplot(cor2,method="number",
+         title= "Cor of W of char btw/ Time 1 and Time 3",
+         mar=c(2,0,2,0),
+         cl.cex=0.8,number.cex=1,tl.cex=0.8)
+corrplot(cor3,method="number",
+         title= "Cor of W of char and Real effect of char in Time 2",
+         mar=c(2,0,2,0),
+         cl.cex=0.8,number.cex=1,tl.cex=0.8)
+corrplot(cor4,method="number",
+         title= "Cor of W of char and Real effect of char in Time 3",
+         mar=c(2,0,2,0),
+         cl.cex=0.8,number.cex=1,tl.cex=0.8)
+
+### 데이터 전처리 ###
+sdd$income=as.numeric(gsub(",","",sdd$income))
+
+# 가중치 만들기
+sdd<- sdd %>%
+  mutate(sum_pf=pf_o_att+pf_o_sin+pf_o_int+pf_o_fun+pf_o_amb+pf_o_sha) %>%
+  mutate(att_n=pf_o_att/(sum_pf/100)) %>%
+  mutate(sin_n=pf_o_sin/(sum_pf/100)) %>%
+  mutate(int_n=pf_o_int/(sum_pf/100)) %>%
+  mutate(fun_n=pf_o_fun/(sum_pf/100)) %>% 
+  mutate(amb_n=pf_o_amb/(sum_pf/100)) %>%
+  mutate(sha_n=pf_o_sha/(sum_pf/100))
+
+sdd <- sdd %>% 
+  mutate(att_w=att_n/100) %>% 
+  mutate(sin_w=sin_n/100) %>% 
+  mutate(int_w=int_n/100) %>%
+  mutate(fun_w=fun_n/100) %>%
+  mutate(amb_w=amb_n/100) %>%
+  mutate(sha_w=sha_n/100)
+
+sdd <- sdd %>% 
+  mutate(attr=attr_o*att_w) %>% 
+  mutate(sinc=sinc_o*sin_w) %>% 
+  mutate(intel=intel_o*int_w) %>% 
+  mutate(fun=fun_o*fun_w) %>% 
+  mutate(amb=amb_o*amb_w) %>% 
+  mutate(shar=shar_o*sha_w)
+
+sdd.new <- sdd[,c("iid", "age", "gender", "race", "field", "field_cd",
+                  "income", "pid", "age_o", "race_o", "samerace", "wave",
+                  "int_corr", "like_o", "dec_o", "attr", "sinc", "intel", 
+                  "amb", "fun", "shar")]
+dim(sdd.new)
+class(sdd.new)
+sum(complete.cases(sdd.new))
+sum(is.na(sdd.new$income))
+
+
+# col별 결측치 확인
+naf <- function(a){
+  x <- c(rep(0, length(a)))
+  for(i in 1:length(a)){
+    x[[i]] <- sum(is.na(a[[i]]))
+  }
+  x.d <- as.data.frame(x)
+  rownames(x.d) <- colnames(sdd.new)
+  x.d}
+
+naf(sdd.new)
+
+
+
+# 범주형 변수 factor
+sdd.new$field_cd<-as.factor(sdd.new$field_cd)
+sdd.new$race<-as.factor(sdd.new$race)
+sdd.new$race_o<-as.factor(sdd.new$race_o)
+sdd.new$samerace<-as.factor(sdd.new$samerace)
+sdd.new$gender<-as.factor(sdd.new$gender)
+sdd.new$dec_o<-as.factor(sdd.new$dec_o)
+
+
+
+###########
+#있는애들끼리만회구
+str(sdd.new)
+sdd.com <- na.omit(sdd.new)
+dim(sdd.com)
+colnames(sdd.com)
+dec.fit <- glm(dec_o~ age+gender+race+field_cd+income+samerace+
+                 int_corr+attr+sinc+intel+amb+fun+shar, data=sdd.com,
+               family="binomial")
+summary(dec.fit)
+step(dec.fit, direction="both")
+
+
+
+like.fit <- lm(like_o~ age+gender+race+field_cd+income+samerace+
+                 int_corr+attr+sinc+intel+amb+fun+shar, data=sdd.com)
+summary(like.fit)
+step(like.fit, direction="both")
+
+boxplot(sdd.com$age)
+str(sdd.com)
+class(sdd.com$age)
+table(sdd.com$age)
+hist(sdd.com$age)
+hist(sdd.com$like_o)
+
+cor(sdd.com$int_corr, sdd.com$shar)
+
+#########################
+#1. 남녀 나누기
+#2. age 그룹으로 나누기
+
+#1. income 지우기
+sdd.new <- sdd.new[,-7]
+
+#2. 나머지 결측치 지우기
+sdd.new <- na.omit(sdd.new)
+dim(sdd.new)
+sdd.new2=sdd.new
+#age 그룹
+hist(sdd.new$age)
+table(sdd.new$age)
+#20-23, 24-27, 28-30,$ 31-35
+nrow(sdd.new[sdd.new$age>19 & sdd.new$age<24,])
+nrow(sdd.new[sdd.new$age>23 & sdd.new$age<27,])
+nrow(sdd.new[sdd.new$age>26 & sdd.new$age<30,])
+nrow(sdd.new[sdd.new$age>29 & sdd.new$age<36,])
+
+#fit 하기 전에 like_o에 대한 jittering
+set.seed(123)
+for(i in 1:nrow(sdd.new)){
+  sdd.new$like_o[i]<-sdd.new$like_o[i]+runif(1,-.5,.5)
+}
+
+fit<-lm(like_o~ race+field_cd+samerace+
+          int_corr+attr+sinc+intel+amb+fun+shar, data=sdd.new)
+
+plot(fit)
+return
+#gender 그룹
+sdd.man <- sdd.new[sdd.new$gender == 0,]
+sdd.man1=sdd.man[sdd.man$age_o>19 & sdd.man$age_o<=23,]
+sdd.man2=sdd.man[sdd.man$age_o>23 & sdd.man$age_o<=26,]
+sdd.man3=sdd.man[sdd.man$age_o>26 & sdd.man$age_o<=29,]
+sdd.man4=sdd.man[sdd.man$age_o>29 & sdd.man$age_o<=35,]
+
+
+#gender 그룹
+sdd.wmn <- sdd.new[sdd.new$gender == 1,]
+sdd.wmn1=sdd.wmn[sdd.wmn$age_o>19 & sdd.wmn$age_o<=23,]
+sdd.wmn2=sdd.wmn[sdd.wmn$age_o>23 & sdd.wmn$age_o<=26,]
+sdd.wmn3=sdd.wmn[sdd.wmn$age_o>26 & sdd.wmn$age_o<=29,]
+sdd.wmn4=sdd.wmn[sdd.wmn$age_o>29 & sdd.wmn$age_o<=35,]
+
+
+#num of obs by gender and age barplot
+num.m <- sapply(list(sdd.man1, sdd.man2, sdd.man3, sdd.man4), nrow)
+num.w <- sapply(list(sdd.wmn1, sdd.wmn2, sdd.wmn3, sdd.wmn4), nrow)
+m <- matrix(c(num.m, num.w), 4, 2)
+m
+colnames(m) <- c("man", "woman")
+rownames(m) <- c("20-23", "24-27", "28-30", "31-35")
+m
+barplot(m, beside = T,
+        col = c("lightblue", "mistyrose", "lightcyan",
+                "lavender"),
+        legend = rownames(m), ylim = c(0, 1500))
+title(main = "grouping by gender and age", font.main = 4)
+
+
+#gender별 회귀
+colnames(sdd.man)
+man.fit1 <- lm(like_o~ race+field_cd+samerace+
+int_corr+attr+sinc+intel+amb+fun+shar, 
+data=sdd.man1)
+step(man.fit1, direction="both")
+man.fit4 <- lm(like_o~ race+field_cd+samerace+
+int_corr+attr+sinc+intel+amb+fun+shar, 
+data=sdd.man4)
+step(man.fit4, direction="both")
+
+str(sdd.man)
+
+##########################
+#육각형 plot 그리기
+
+#install.packages('fmsb')
+#install.packages("gridBase")
+
+library(fmsb)
+library(dplyr)
+library(tibble)
+library(stringr)
+library(ggplot2)
+library(grid)
+library(gridBase)
+library(scales)
+
+
+maxmin <- data.frame(
+  Attractive = c(2, 0),
+  Sincere = c(2, 0),
+  Intelligent = c(2, 0),
+  Fun = c(2, 0),
+  Ambitious = c(2, 0),
+  Interest = c(2, 0))
+
+
+#man1
+
+man.fit1.forplot <- lm(like_o~attr+sinc+intel+amb+fun+shar, data=sdd.man1
+)
+mfp1 <- man.fit1.forplot$coefficients[-1]
+
+plot.m1 <- rbind(maxmin, mfp1)
+
+radarchart(maxmin)
+
+radarchart(plot.m1,
+           pty = 32,
+           axistype = 0,
+           pcol = c(adjustcolor("hotpink1", 0.5), adjustcolor("cadetblue2", 0.5)),
+           pfcol = c(adjustcolor("hotpink1", 0.5), adjustcolor("cadetblue2", 0.5)),
+           plty = 1,
+           plwd = 3,
+           cglty = 1,
+           cglcol = "gray88",
+           centerzero = TRUE,
+           seg = 5,
+           vlcex = 0.75,
+           palcex = 0.75)
+
+#man2
+man.fit2.forplot <- lm(like_o~attr+sinc+intel+amb+fun+shar, data=sdd.man2
+)
+mfp2 <- man.fit2.forplot$coefficients[-1]
+mfp2
+plot.m2 <- rbind(maxmin, mfp2)
+
+radarchart(plot.m2,
+           pty = 32,
+           axistype = 0,
+           pcol = c(adjustcolor("hotpink1", 0.5), adjustcolor("cadetblue2", 0.5)),
+           pfcol = c(adjustcolor("hotpink1", 0.5), adjustcolor("cadetblue2", 0.5)),
+           plty = 1,
+           plwd = 3,
+           cglty = 1,
+           cglcol = "gray88",
+           centerzero = TRUE,
+           seg = 5,
+           vlcex = 0.75,
+           palcex = 0.75)
+#man3
+man.fit3.forplot <- lm(like_o~attr+sinc+intel+amb+fun+shar, data=sdd.man3
+)
+mfp3 <- man.fit3.forplot$coefficients[-1]
+
+plot.m3 <- rbind(maxmin, mfp3)
+
+radarchart(plot.m3,
+           pty = 32,
+           axistype = 0,
+           pcol = c(adjustcolor("hotpink1", 0.5), adjustcolor("cadetblue2", 0.5)),
+           pfcol = c(adjustcolor("hotpink1", 0.5), adjustcolor("cadetblue2", 0.5)),
+           plty = 1,
+           plwd = 3,
+           cglty = 1,
+           cglcol = "gray88",
+           centerzero = TRUE,
+           seg = 5,
+           vlcex = 0.75,
+           palcex = 0.75)
+#man4
+man.fit4.forplot <- lm(like_o~attr+sinc+intel+amb+fun+shar, data=sdd.man4
+)
+mfp4 <- man.fit4.forplot$coefficients[-1]
+
+plot.m4 <- rbind(maxmin, mfp4)
+
+radarchart(plot.m4,
+           pty = 32,
+           axistype = 0,
+           pcol = c(adjustcolor("hotpink1", 0.5), adjustcolor("cadetblue2", 0.5)),
+           pfcol = c(adjustcolor("hotpink1", 0.5), adjustcolor("cadetblue2", 0.5)),
+           plty = 1,
+           plwd = 3,
+           cglty = 1,
+           cglcol = "gray88",
+           centerzero = TRUE,
+           seg = 5,
+           vlcex = 0.75,
+           palcex = 0.75)
+
+
+#wmn1
+
+wmn.fit1.forplot <- lm(like_o~attr+sinc+intel+amb+fun+shar, data=sdd.wmn1
+)
+wfp1 <- wmn.fit1.forplot$coefficients[-1]
+
+plot.m1 <- rbind(maxmin, wfp1)
+
+radarchart(plot.m1,
+           pty = 32,
+           axistype = 0,
+           pcol = c(adjustcolor("hotpink1", 0.5), adjustcolor("cadetblue2", 0.5)),
+           pfcol = c(adjustcolor("hotpink1", 0.5), adjustcolor("cadetblue2", 0.5)),
+           plty = 1,
+           plwd = 3,
+           cglty = 1,
+           cglcol = "gray88",
+           centerzero = TRUE,
+           seg = 5,
+           vlcex = 0.75,
+           palcex = 0.75)
+
+#wmn2
+wmn.fit2.forplot <- lm(like_o~attr+sinc+intel+amb+fun+shar, data=sdd.wmn2
+)
+wfp2 <- wmn.fit2.forplot$coefficients[-1]
+plot.m2 <- rbind(maxmin, wfp2)
+
+radarchart(plot.m2,
+           pty = 32,
+           axistype = 0,
+           pcol = c(adjustcolor("hotpink1", 0.5), adjustcolor("cadetblue2", 0.5)),
+           pfcol = c(adjustcolor("hotpink1", 0.5), adjustcolor("cadetblue2", 0.5)),
+           plty = 1,
+           plwd = 3,
+           cglty = 1,
+           cglcol = "gray88",
+           centerzero = TRUE,
+           seg = 5,
+           vlcex = 0.75,
+           palcex = 0.75)
+#wmn3
+wmn.fit3.forplot <- lm(like_o~attr+sinc+intel+amb+fun+shar, data=sdd.wmn3
+)
+wfp3 <- wmn.fit3.forplot$coefficients[-1]
+
+plot.m3 <- rbind(maxmin, wfp3)
+
+radarchart(plot.m3,
+           pty = 32,
+           axistype = 0,
+           pcol = c(adjustcolor("hotpink1", 0.5), adjustcolor("cadetblue2", 0.5)),
+           pfcol = c(adjustcolor("hotpink1", 0.5), adjustcolor("cadetblue2", 0.5)),
+           plty = 1,
+           plwd = 3,
+           cglty = 1,
+           cglcol = "gray88",
+           centerzero = TRUE,
+           seg = 5,
+           vlcex = 0.75,
+           palcex = 0.75)
+#wmn4
+wmn.fit4.forplot <- lm(like_o~attr+sinc+intel+amb+fun+shar, data=sdd.wmn4
+)
+wfp4 <- wmn.fit4.forplot$coefficients[-1]
+
+plot.m4 <- rbind(maxmin, wfp4)
+
+radarchart(plot.m4,
+           pty = 32,
+           axistype = 0,
+           pcol = c(adjustcolor("hotpink1", 0.5), adjustcolor("cadetblue2", 0.5)),
+           pfcol = c(adjustcolor("hotpink1", 0.5), adjustcolor("cadetblue2", 0.5)),
+           plty = 1,
+           plwd = 3,
+           cglty = 1,
+           cglcol = "gray88",
+           centerzero = TRUE,
+           seg = 5,
+           vlcex = 0.75,
+           palcex = 0.75)
+
+
+#1127
+
+scores <- rbind(mfp1, mfp2, mfp3, mfp4, wfp1, wfp2, wfp3, wfp4)
+scores
+barplot(scores[c(1:4),], beside=T, main="men", col=heat.colors(4))
+barplot(scores[c(5:8),], beside=T, main="women", col=topo.colors(4))
+
+
+#ik
+weight <- c(20, 20, 20, 10, 20, 10)
+score <- c(10, 10, 10, 10, 10, 10)
+w.s <- weight*0.1*score
+w.s
+
+
+sum(mfp2*w.s)
+
+score
+#target(gender, age) -> 함수 안에 자동 분류기
+#weight(,,,,,) 6개를 1에서 10 스케일로 주기 -> 
+#score(,,,,,), 6개를 1에서 10 스케일로 주기
+target <- c("woman", 27)
+weight <- c(3, 5, 2, 7, 8, 1)
+score <- c(4, 5, 2, 3, 1, 6)
+
+likey <- function(target,weight,score){
+  if(target[1]=="man"){
+    if(target[2] <= 23) target1 <- mfp1
+    if(target[2] >23 & target[2] <=26) target1 <- mfp2
+    if(target[2] >26 & target[2] <=29) target1 <- mfp3
+    else target1 <- mfp4
+  }
+  else{
+    if(target[2] <= 23) target1 <- wfp1
+    if(target[2] >23 & target[2] <=26) target1 <- wfp2
+    if(target[2] >26 & target[2] <=29) target1 <- wfp3
+    else target1 <- wfp4
+  }
+  
+  weight1 <- weight/sum(weight)*100
+  weight <- weight1
+  temp <- weight*0.1*score
+  temp2 <- sum(target1)
+  round(temp2,2)
+}
+sum(weight2/sum(weight2)*score2)
+sum(weight2*0.1*max)
+
+sum(mfp1*weight2*max*0.1)
+
+
+tw <- weight2/sum(weight2)*100
+sum(tw)
+tw
+tw*max
+tw*max*0.1
+sum(tw*max*0.1)
+sum(tw*score2*0.1)
+
+#강동원과 어진
+target2<- c("man", 35)
+weight2<- c(7, 3, 2, 5, 5, 9)
+score2<- c(5, 8, 3, 8, 10, 3)
+likey(target2, weight2, max)
+max <- c(10, 10, 10, 10, 10, 10)
+
+if(target[1]=="man"){
+  if(target[2] <= 23) temp <- wfp1
+  if(target[2] >23 & target[2] <=26) temp <- wfp2
+  if(target[2] >26 & target[2] <=29) temp <- wfp3
+  else temp <- wfp4
+}
+temp
+
+
+#######coefficients!!!!!!!!!!!!1
+m1 <- man.fit1.forplot$coefficients
+m2 <- man.fit2.forplot$coefficients
+m3 <- man.fit3.forplot$coefficients
+m4 <- man.fit4.forplot$coefficients
+w1 <- wmn.fit1.forplot$coefficients
+w2 <- wmn.fit2.forplot$coefficients
+w3 <- wmn.fit3.forplot$coefficients
+w4 <- wmn.fit4.forplot$coefficients
+
+m2
+likey <- function(target,weight,score){
+  if(target[1]=="man"){
+    if(target[2] <= 23) target1 <- m1
+    if(target[2] >23 & target[2] <=26) target1 <- m2
+    if(target[2] >26 & target[2] <=29) target1 <- m3
+    else target1 <- m4
+  }
+  else{
+    if(target[2] <= 23) target1 <- w1
+    if(target[2] >23 & target[2] <=26) target1 <- w2
+    if(target[2] >26 & target[2] <=29) target1 <- w3
+    else target1 <- w4
+  }
+  
+  weight <- weight/sum(weight)*100
+  temp <- weight*0.1*score
+  
+  temp2 <- sum(target1[1], target1[-1]*temp)
+  
+  max <- sum(target1[1], target1[-1]*weight*0.1*(rep(10,6)))
+  
+  round(temp2/max*100, 1)
+}
+
+
+#강동원과 어진
+target2<- c("man", 35)
+weight2<- c(7, 3, 2, 5, 5, 9)
+score2<- c(5, 8, 3, 8, 10, 3)
+max <- rep(10, 6)
+likey(target2, weight2, score2)
+
+m1
+m1
+
+#hj
+h <- c("man", 25)
+w <- c(8, 7, 6, 5, 6, 8)
+j <- c(7, 9, 7, 8, 6, 6)
+likey(h, w, j)
+
+
+#sy
+target <- c("man", 25)
+weight <- c(6, 9, 6, 7, 9.5, 9.5)
+score <- c(7, 9, 6.5, 6, 8, 8)
+likey(target, w, score)
+
+#hyejin
+x <- c("man", 26)
+y <- c(8,10,7,4,7,10)
+z <- c(10, 5, 7, 6, 8, 4.5)
+likey(x, y, z)
