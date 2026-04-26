@@ -315,8 +315,67 @@
 <div class="day-panel" id="day-1">
   <div class="day-header">
     <span class="day-num">DAY 2</span>
-    <span class="day-title">사쿠라지마 당일치기 🌋</span>
+    <span class="day-title">가고시마 시내 탐방 🏯</span>
     <span class="day-date">5/1 금</span>
+  </div>
+  <div class="timeline">
+
+    <div class="timeline-item">
+      <div class="tl-icon">🌿</div>
+      <div class="tl-card">
+        <span class="tl-time-badge badge-morning">오전</span>
+        <div class="tl-title">센간엔 (仙巌園)</div>
+        <div class="tl-desc">사쿠라지마를 배경으로 한 시마즈 가문의 정원. 세계유산 구성 자산.</div>
+        <div class="tl-tip">💡 숙소에서 시내버스 또는 택시 이용</div>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="tl-icon">🏺</div>
+      <div class="tl-card">
+        <span class="tl-time-badge badge-morning">오전</span>
+        <div class="tl-title">상고집성관 (尚古集成館)</div>
+        <div class="tl-desc">센간엔 내 위치. 일본 근대화 산업혁명 유적 박물관.</div>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="tl-icon">🍱</div>
+      <div class="tl-card">
+        <span class="tl-time-badge badge-afternoon">점심</span>
+        <div class="tl-title">시내 점심</div>
+        <div class="tl-desc">텐몬칸 또는 가고시마 중앙역 주변에서 점심.</div>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="tl-icon">🏙️</div>
+      <div class="tl-card">
+        <span class="tl-time-badge badge-afternoon">오후</span>
+        <div class="tl-title">가고시마 시립 미술관 / 자유 탐방</div>
+        <div class="tl-desc">텐몬칸 쇼핑, 기념품 구입, 시내 카페 탐방 등 자유 일정.</div>
+        <div class="tl-tip">🛍️ 꼭 살 것: 봉지 아이스크림(시로쿠마), 사쓰마게</div>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="tl-icon">🍽️</div>
+      <div class="tl-card">
+        <span class="tl-time-badge badge-evening">저녁</span>
+        <div class="tl-title">레스토랑 산에이 🍴</div>
+        <div class="tl-desc">18:30 예약.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Day 3 -->
+<div class="day-panel" id="day-2">
+  <div class="day-header">
+    <span class="day-num">DAY 3</span>
+    <span class="day-title">사쿠라지마 당일치기 🌋</span>
+    <span class="day-date">5/2 토</span>
   </div>
   <div class="timeline">
 
@@ -384,65 +443,6 @@
         <span class="tl-time-badge badge-evening">저녁식사</span>
         <div class="tl-title">텐몬칸 or 숙소 주변 저녁</div>
         <div class="tl-desc">가고시마 향토 음식 탐방. 흑돼지 돈카츠, 키비나고 등 추천.</div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- Day 3 -->
-<div class="day-panel" id="day-2">
-  <div class="day-header">
-    <span class="day-num">DAY 3</span>
-    <span class="day-title">가고시마 시내 탐방 🏯</span>
-    <span class="day-date">5/2 토</span>
-  </div>
-  <div class="timeline">
-
-    <div class="timeline-item">
-      <div class="tl-icon">🌿</div>
-      <div class="tl-card">
-        <span class="tl-time-badge badge-morning">오전</span>
-        <div class="tl-title">센간엔 (仙巌園)</div>
-        <div class="tl-desc">사쿠라지마를 배경으로 한 시마즈 가문의 정원. 세계유산 구성 자산.</div>
-        <div class="tl-tip">💡 숙소에서 시내버스 또는 택시 이용</div>
-      </div>
-    </div>
-
-    <div class="timeline-item">
-      <div class="tl-icon">🏺</div>
-      <div class="tl-card">
-        <span class="tl-time-badge badge-morning">오전</span>
-        <div class="tl-title">상고집성관 (尚古集成館)</div>
-        <div class="tl-desc">센간엔 내 위치. 일본 근대화 산업혁명 유적 박물관.</div>
-      </div>
-    </div>
-
-    <div class="timeline-item">
-      <div class="tl-icon">🍱</div>
-      <div class="tl-card">
-        <span class="tl-time-badge badge-afternoon">점심</span>
-        <div class="tl-title">시내 점심</div>
-        <div class="tl-desc">텐몬칸 또는 가고시마 중앙역 주변에서 점심.</div>
-      </div>
-    </div>
-
-    <div class="timeline-item">
-      <div class="tl-icon">🏙️</div>
-      <div class="tl-card">
-        <span class="tl-time-badge badge-afternoon">오후</span>
-        <div class="tl-title">가고시마 시립 미술관 / 자유 탐방</div>
-        <div class="tl-desc">텐몬칸 쇼핑, 기념품 구입, 시내 카페 탐방 등 자유 일정.</div>
-        <div class="tl-tip">🛍️ 꼭 살 것: 봉지 아이스크림(시로쿠마), 사쓰마게</div>
-      </div>
-    </div>
-
-    <div class="timeline-item">
-      <div class="tl-icon">🍦</div>
-      <div class="tl-card">
-        <span class="tl-time-badge badge-evening">저녁</span>
-        <div class="tl-title">저녁 + 시로쿠마 (白熊) 디저트</div>
-        <div class="tl-desc">가고시마 명물 팥빙수 '시로쿠마'. 무짱무짱 본점 추천.</div>
       </div>
     </div>
 
